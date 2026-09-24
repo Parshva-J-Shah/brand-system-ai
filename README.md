@@ -47,5 +47,4 @@ This must be a **working product**, not only a presentation. The demo
 must show a real user input, the AI workflow and a real generated
 output.
 
-The system should expose its staged workflow and preserve structured
-context between stages instead of using one giant prompt.
+The system should expose its staged workflow and preserve structured context between stages instead of using one giant prompt.
