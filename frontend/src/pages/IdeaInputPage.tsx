@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ProjectData, ProjectInput } from '../types/project';
+import { ProjectData, ProjectInput, DiscoveryData } from '../types/project';
 import { api } from '../services/api';
 
 interface IdeaInputPageProps {
@@ -8,6 +8,28 @@ interface IdeaInputPageProps {
   onProjectCreated: (newProject: ProjectData) => void;
 }
 
+const DEMO_DISCOVERY: DiscoveryData = {
+  problem:
+    'Small startup founders struggle to turn rough product ideas into clear, differentiated brands quickly and affordably.',
+  target_user:
+    'Early-stage startup founders and small teams preparing to launch a new product.',
+  context:
+    'Founders often have a strong product idea but lack dedicated brand strategy resources and need to move from concept to launch quickly.',
+  constraints: [
+    'Small budget.',
+    'Need to launch quickly.',
+    'Limited branding expertise.',
+  ],
+  known_value:
+    'An AI-guided system can transform an unstructured startup idea into structured brand intelligence and launch-ready direction.',
+  open_questions: [
+    'What exact category should the product own?',
+    'Which customer segment has the strongest immediate need?',
+    'What alternatives are founders currently using?',
+    'What proof points can establish trust?',
+  ],
+};
+
 export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
   project,
   onNavigate,
@@ -15,17 +37,19 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
 }) => {
   const [idea, setIdea] = useState(
     project.input.idea ||
-      'An app that helps college students find teammates for projects, matching by work style and schedule instead of just friendship.'
+      'An AI platform that helps small startups turn rough ideas into clear, launch-ready brands.'
   );
   const [audience, setAudience] = useState(
-    project.input.audience || 'College students & hackathon teams'
+    project.input.audience || 'Early-stage startup founders'
   );
-  const [category, setCategory] = useState('Student collaboration platform');
+  const [category, setCategory] = useState('Brand intelligence platform');
   const [tone, setTone] = useState(
     project.input.tone || 'Modern, energetic, practical and friendly'
   );
   const [constraints, setConstraints] = useState<string[]>(
-    project.input.constraints || ['Affordable', 'Mobile-first', 'Zero-ghosting guarantee']
+    project.input.constraints && project.input.constraints.length > 0
+      ? project.input.constraints
+      : ['Small budget', 'Need to launch quickly', 'Limited branding expertise']
   );
   const [newConstraint, setNewConstraint] = useState('');
 
@@ -39,6 +63,7 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [discoveryResult, setDiscoveryResult] = useState<DiscoveryData | null>(null);
 
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -56,7 +81,7 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
     setConstraints(constraints.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!idea.trim()) {
       setError('Please provide an idea to proceed.');
@@ -66,26 +91,37 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
     setLoading(true);
     setError(null);
 
-    const inputData: ProjectInput = {
-      idea: idea.trim(),
-      audience: audience.trim(),
-      tone: tone.trim(),
-      constraints: constraints,
-    };
-
-    try {
-      const res = await api.createProject(inputData);
-      const fullProject = await api.getProject(res.project_id);
-
-      onProjectCreated(fullProject);
-      // Seamlessly navigate to workflow screen
-      onNavigate(3);
-    } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Failed to create project';
-      setError(errMsg);
-    } finally {
+    // Simulate AI Discovery Agent analysis with visible loading feedback
+    setTimeout(() => {
+      setDiscoveryResult(DEMO_DISCOVERY);
       setLoading(false);
-    }
+
+      const inputData: ProjectInput = {
+        idea: idea.trim(),
+        audience: audience.trim(),
+        tone: tone.trim(),
+        constraints: constraints,
+      };
+
+      const updatedProject: ProjectData = {
+        ...project,
+        name: 'BrandPrism AI',
+        input: inputData,
+        discovery: DEMO_DISCOVERY,
+        status: 'DISCOVERING',
+        completed_stages: ['discovery'],
+      };
+
+      onProjectCreated(updatedProject);
+
+      // Smooth scroll to the result section
+      setTimeout(() => {
+        const el = document.getElementById('discovery-result-card');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    }, 1200);
   };
 
   // Quick preset pills
@@ -388,7 +424,7 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
                     {loading ? (
                       <>
                         <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                        <span>Synthesizing Brand Foundation...</span>
+                        <span>Discovery Agent analyzing...</span>
                       </>
                     ) : (
                       <>
@@ -400,7 +436,7 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
                     )}
                   </button>
                   <p className="mt-3 text-center font-label text-xs text-outline">
-                    Connected to FastAPI Intelligence Pipeline • Runs in ~1.5 seconds
+                    Connected to FastAPI Intelligence Pipeline • Discovery Agent Ready
                   </p>
                 </div>
               </div>
@@ -457,6 +493,140 @@ export const IdeaInputPage: React.FC<IdeaInputPageProps> = ({
                 </div>
               </div>
             </form>
+
+            {/* Polished AI Discovery Result Section */}
+            {discoveryResult && (
+              <div
+                id="discovery-result-card"
+                className="w-full mt-4 bg-surface-container rounded-2xl p-6 sm:p-8 shadow-2xl border border-primary/40 relative overflow-hidden animate-fade-in"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-tertiary to-secondary"></div>
+
+                {/* Header Row */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-tertiary/15 text-tertiary flex items-center justify-center border border-tertiary/30 shadow-sm">
+                      <span className="material-symbols-outlined text-[28px]">psychology</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-headline text-2xl sm:text-3xl font-bold text-on-surface">
+                          AI Discovery Agent
+                        </h2>
+                        <span className="text-tertiary font-bold text-2xl">✓</span>
+                      </div>
+                      <p className="font-body text-xs sm:text-sm text-on-surface-variant">
+                        Structured brand intelligence synthesized from raw founder inputs.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary font-label text-xs font-semibold self-start sm:self-auto">
+                    <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                    Discovery stage completed
+                  </div>
+                </div>
+
+                {/* Grid of Discovery Content */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
+                  {/* Problem - High Impact Full Width */}
+                  <div className="lg:col-span-12 p-6 rounded-xl bg-surface-container-high border border-white/5 space-y-2 relative overflow-hidden">
+                    <div className="absolute top-0 left-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-primary-container"></div>
+                    <div className="flex items-center gap-2 text-primary font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">crisis_alert</span>
+                      Problem
+                    </div>
+                    <p className="font-headline text-lg sm:text-xl text-on-surface font-semibold leading-relaxed">
+                      {discoveryResult.problem}
+                    </p>
+                  </div>
+
+                  {/* Target User */}
+                  <div className="lg:col-span-6 p-5 sm:p-6 rounded-xl bg-surface-container-low border border-white/5 space-y-2">
+                    <div className="flex items-center gap-2 text-secondary font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">person</span>
+                      Target User
+                    </div>
+                    <p className="font-body text-sm sm:text-base text-on-surface leading-relaxed font-medium">
+                      {discoveryResult.target_user}
+                    </p>
+                  </div>
+
+                  {/* Context */}
+                  <div className="lg:col-span-6 p-5 sm:p-6 rounded-xl bg-surface-container-low border border-white/5 space-y-2">
+                    <div className="flex items-center gap-2 text-outline font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">travel_explore</span>
+                      Context
+                    </div>
+                    <p className="font-body text-sm sm:text-base text-on-surface-variant leading-relaxed">
+                      {discoveryResult.context}
+                    </p>
+                  </div>
+
+                  {/* Constraints */}
+                  <div className="lg:col-span-6 p-5 sm:p-6 rounded-xl bg-surface-container-low border border-white/5 space-y-3">
+                    <div className="flex items-center gap-2 text-outline font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">rule</span>
+                      Constraints
+                    </div>
+                    <ul className="space-y-2">
+                      {discoveryResult.constraints.map((c, idx) => (
+                        <li key={idx} className="flex items-center gap-2.5 text-sm text-on-surface">
+                          <span className="w-1.5 h-1.5 rounded-full bg-secondary shrink-0"></span>
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Known Value */}
+                  <div className="lg:col-span-6 p-5 sm:p-6 rounded-xl bg-surface-container-low border border-white/5 space-y-2">
+                    <div className="flex items-center gap-2 text-tertiary font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">verified</span>
+                      Known Value
+                    </div>
+                    <p className="font-body text-sm sm:text-base text-on-surface leading-relaxed">
+                      {discoveryResult.known_value}
+                    </p>
+                  </div>
+
+                  {/* Open Questions */}
+                  <div className="lg:col-span-12 p-5 sm:p-6 rounded-xl bg-surface-container-lowest border border-white/5 space-y-3">
+                    <div className="flex items-center gap-2 text-primary font-label text-xs uppercase tracking-wider font-semibold">
+                      <span className="material-symbols-outlined text-[16px]">help_outline</span>
+                      Open Questions
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {discoveryResult.open_questions.map((q, idx) => (
+                        <div
+                          key={idx}
+                          className="p-3.5 rounded-lg bg-surface-container border border-white/5 flex items-start gap-2.5 text-xs sm:text-sm text-on-surface"
+                        >
+                          <span className="font-label text-xs text-primary font-bold">
+                            {idx + 1}.
+                          </span>
+                          <span>{q}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Continue Action */}
+                <div className="mt-8 pt-6 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
+                  <span className="font-label text-xs text-outline">
+                    Discovery Stage Verified • Ready for Positioning & Strategic Vectors
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(4)}
+                    className="flex items-center gap-2 px-6 py-3 rounded-lg bg-primary-container text-on-primary-container font-headline text-sm font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-md"
+                  >
+                    <span>Continue to Brand Strategy</span>
+                    <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -16,7 +16,7 @@ export const StrategyPage: React.FC<StrategyPageProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [problem, setProblem] = useState(
     project.discovery?.problem ||
-      'Students struggle to find reliable teammates for meaningful projects.'
+      'Small startup founders struggle to turn rough product ideas into clear, differentiated brands quickly and affordably.'
   );
   const [valueProp, setValueProp] = useState(
     project.positioning?.value_proposition ||
@@ -176,19 +176,18 @@ export const StrategyPage: React.FC<StrategyPageProps> = ({
 
               <div className="space-y-4">
                 <h3 className="font-headline text-xl text-on-surface font-semibold">
-                  College Students & Campus Builders
+                  {project.discovery?.target_user || 'Early-stage startup founders and small teams'}
                 </h3>
                 <p className="text-on-surface-variant text-sm leading-relaxed">
-                  Undergraduates and graduate students building software, hardware, or research
-                  projects outside standard classroom silos.
+                  {project.discovery?.context || 'Founders often have a strong product idea but lack dedicated brand strategy resources and need to move from concept to launch quickly.'}
                 </p>
 
                 <div className="flex flex-wrap gap-2 pt-2">
                   {[
-                    'Hackathon Competitors',
-                    'Capstone Project Teams',
-                    'First-time Builders',
-                    'Campus Club Leads',
+                    'Startup Founders',
+                    'Solo Creators',
+                    'Pre-seed Teams',
+                    'Indie Hackers',
                   ].map((tag, i) => (
                     <span
                       key={i}
@@ -205,8 +204,7 @@ export const StrategyPage: React.FC<StrategyPageProps> = ({
                   Key Context & Friction
                 </span>
                 <p className="text-xs text-on-surface-variant leading-relaxed">
-                  Standard university forums and Discord chats have high noise, zero accountability,
-                  and no objective way to evaluate mutual work-ethic compatibility.
+                  {project.discovery?.context || 'Founders often have a strong product idea but lack dedicated brand strategy resources and need to move from concept to launch quickly.'}
                 </p>
               </div>
             </div>
